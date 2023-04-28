@@ -35,7 +35,7 @@ def contact(request):
 def login_request(request):
     if request.method == "POST":
         username = request.POST['username']
-        password = request.POST['psw']
+        password = request.POST['password']
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
@@ -59,9 +59,9 @@ def registration_request(request):
     elif request.method == 'POST':
         # Check if user exists
         username = request.POST['username']
-        password = request.POST['pwd']
-        first_name = request.POST['firstname']
-        last_name = request.POST['lastname']
+        password = request.POST['password']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
         user_exist = False
         try:
             User.objects.get(username=username)
