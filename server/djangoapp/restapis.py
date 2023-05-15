@@ -12,8 +12,8 @@ import time
 def get_request(url, **kwargs):
     
     # If argument contain API KEY
-    api_key = kwargs.get("gap4Fy52eJPBP99olpWfafWMow94M-uJbRNP057sjY1K")
-    print("GET from {https://apikey-v2-26jk5szf4wz9t1zgu254uylcybr2gjpomt3yz9wmrp9d:62099ce8f31b156cabf6c69b2dcf8328@961519f9-f9af-413a-b45e-8eeb59533c43-bluemix.cloudantnosqldb.appdomain.cloud} ".format(url))
+    api_key = kwargs.get("apikey")
+    print("GET from {} ".format(url))
     try:
         if api_key:
             params = dict()
@@ -22,7 +22,7 @@ def get_request(url, **kwargs):
             params["features"] = kwargs["features"]
             params["return_analyzed_text"] = kwargs["return_analyzed_text"]
             response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-                                    auth=HTTPBasicAuth('apikey', gap4Fy52eJPBP99olpWfafWMow94M-uJbRNP057sjY1K))
+                                    auth=HTTPBasicAuth('apikey', api_key))
         else:
             # Call get method of requests library with URL and parameters
             response = requests.get(url, headers={'Content-Type': 'application/json'},
@@ -93,50 +93,18 @@ def get_dealer_by_id_from_cf(url, id):
     return dealer_obj
 
 
-def get_dealer_reviews_from_cf(url, **kwargs):
-    results = []
-    id = kwargs.get("id")
-    if id:
-        json_result = get_request(url, id=id)
-    else:
-        json_result = get_request(url)
-    # print(json_result)
-    if json_result:
-        print("line 105",json_result)
-        reviews = json_result["data"]["docs"]
-        for dealer_review in reviews:
-            review_obj = DealerReview(dealership=dealer_review["dealership"],
-                                   name=dealer_review["name"],
-                                   purchase=dealer_review["purchase"],
-                                   review=dealer_review["review"])
-            if "id" in dealer_review:
-                review_obj.id = dealer_review["id"]
-            if "purchase_date" in dealer_review:
-                review_obj.purchase_date = dealer_review["purchase_date"]
-            if "car_make" in dealer_review:
-                review_obj.car_make = dealer_review["car_make"]
-            if "car_model" in dealer_review:
-                review_obj.car_model = dealer_review["car_model"]
-            if "car_year" in dealer_review:
-                review_obj.car_year = dealer_review["car_year"]
-            
-            sentiment = analyze_review_sentiments(review_obj.review)
-            print(sentiment)
-            review_obj.sentiment = sentiment
-            results.append(review_obj)
 
-    return results
+# Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
+# def get_dealer_by_id_from_cf(url, dealerId):
+# - Call get_request() with specified arguments
+# - Parse JSON results into a DealerView object list
 
 
-def analyze_review_sentiments(text):
-    url = "https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/a7d55b2b-30e4-4d58-91a1-bd84cb7b5c14"
-    api_key = "S8Ncd3903aq7KoTo6MJPqi3nrpIvivQuWJdwqmMQifFK"
-    authenticator = IAMAuthenticator(api_key)
-    natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
-    natural_language_understanding.set_service_url(url)
-    response = natural_language_understanding.analyze( text=text+"hello hello hello",features=Features(sentiment=SentimentOptions(targets=[text+"hello hello hello"]))).get_result()
-    label=json.dumps(response, indent=2)
-    label = response['sentiment']['document']['label']
-    
-    
-    return(label)
+# Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
+# def analyze_review_sentiments(text):
+# - Call get_request() with specified arguments
+# - Get the returned sentiment label such as Positive or Negative
+
+
+
+
