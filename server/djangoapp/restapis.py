@@ -1,6 +1,6 @@
 import requests
 import json
-from .models import CarDealer
+from .models import CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson import NaturalLanguageUnderstandingV1
@@ -37,11 +37,11 @@ def get_request(url, **kwargs):
     return json_data
 
 
-def post_request(url, payload, **kwargs):
+def post_request(url, json_payload, **kwargs):
     print(kwargs)
     print("POST to {} ".format(url))
-    print(payload)
-    response = requests.post(url, params=kwargs, json=payload)
+    print(json_payload)
+    response = requests.post(url, params=kwargs, json=json_payload)
     status_code = response.status_code
     print("With status {} ".format(status_code))
     json_data = json.loads(response.text)

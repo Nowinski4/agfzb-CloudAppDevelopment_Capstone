@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
-from .models import CarModel, CarMake, CarDealer
+from .models import CarModel, CarMake, CarDealer, DealerReview
 # from .restapis import related methods
 from .restapis import get_dealers_from_cf,get_dealer_by_id_from_cf, get_dealer_reviews_from_cf, get_request, post_request
 from django.contrib.auth import login, logout, authenticate
@@ -128,6 +128,44 @@ def get_dealer_details(request, id):
         return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
+def add_review(request, id):
+    context = {}
+    dealer_url = "https://us-south.functions.appdomain.cloud/api/v1/web/9383ad21-b549-4cb1-9aba-f32d252cab45/dealership-package/get-dealership"
+    dealer = get_dealer_by_id_from_cf(dealer_url, id=id)
+    context["dealer"] = dealer
+
+    if request.method == 'GET':
+        # Get cars for the dealer
+        cars = CarModel.objects.all()
+        context["cars"] = cars
+
+        return render(request, 'djangoapp/add_review.html', context)
+    
+    elif request.method == 'POST':
+        if request.user.is_authenticated:
+            username = request.user.username
+            payload = {}
+            car_id = request.POST["car"]
+            car = CarModel.objects.get(pk=car_id)
+            payload["time"] = datetime.utcnow().isoformat()
+            payload["name"] = username
+            payload["dealership"] = id
+            payload["id"] = id
+            payload["review"] = request.POST["content"]
+            payload["purchase"] = False
+
+            if "purchasecheck" in request.POST:
+                if request.POST["purchasecheck"] == 'on':
+                    payload["purchase"] = True
+
+            payload["purchase_date"] = request.POST["purchasedate"]
+            payload["car_make"] = car.make.name
+            payload["car_model"] = car.name
+            payload["car_year"] = int(car.year.strftime("%Y"))
+
+            new_payload = {"review": payload}
+            review_post_url = "https://us-south.functions.appdomain.cloud/api/v1/web/9383ad21-b549-4cb1-9aba-f32d252cab45/dealership-package/post-review"
+            post_request(review_post_url, new_payload, id=id)
+
+        return redirect("djangoapp:dealer_details", id=id)
 
