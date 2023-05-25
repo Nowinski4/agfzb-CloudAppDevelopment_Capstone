@@ -10,6 +10,10 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
 import logging
+from django.db import models
+from django.core import serializers
+from django.utils.timezone import now
+import uuid
 import json
 
 # Get an instance of a logger
@@ -35,23 +39,31 @@ def contact(request):
 
 # Create a `login_request` view to handle sign in request
 def login_request(request):
+    context = {}
+    # Handles POST request
     if request.method == "POST":
+         # Get username and password from request.POST dictionary
         username = request.POST['username']
         password = request.POST['password']
+        # Try to check if provide credential can be authenticated
         user = authenticate(username=username, password=password)
         if user is not None:
+            # If user is valid, call login method to login current user
             login(request, user)
-            #messages.success(request, "Login successfully!")
             return redirect('djangoapp:index')
         else:
+            # If not, return to login page again
             messages.warning(request, "Invalid username or password.")
             return redirect("djangoapp:index")
 
 # Create a `logout_request` view to handle sign out request
 def logout_request(request):
+    # Get the user object based on session id in request
     print("Log out the user `{}`".format(request.user.username))
+    # Logout user in the request
     logout(request)
-    return redirect('djangoapp:index')
+    # Redirect user back to course list view
+    return redirect('/djangoapp')
 
 # Create a `registration_request` view to handle sign up request
 def registration_request(request):
@@ -61,7 +73,7 @@ def registration_request(request):
     elif request.method == 'POST':
         # Check if user exists
         username = request.POST['username']
-        password = request.POST['password']
+        password = request.POST['psw']
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
         user_exist = False
@@ -85,8 +97,16 @@ def registration_request(request):
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    context = {}
     if request.method == "GET":
+        context = {}
+        url = "https://us-south.functions.appdomain.cloud/api/v1/web/9383ad21-b549-4cb1-9aba-f32d252cab45/dealership-package/get-dealership"
+        
+        # Get dealers from the URL
+        dealerships = get_dealers_from_cf(url)
+
+        context["dealerships"] = dealerships
+        
+        # Return a list of dealer short name
         return render(request, 'djangoapp/index.html', context)
 
 
