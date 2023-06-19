@@ -13,7 +13,7 @@
     <body>
     <!--Add review form here -->
     <div class="container-fluid">
-        <h3>Please add a review for <b>{{dealer.full_name}}</b></h3>
+        <h3>Add a review about <b>{{dealer.full_name}}</b></h3>
         <form action="{% url 'djangoapp:add_review' dealer.id %}" method="post">
     
                   <div class="form-group">
